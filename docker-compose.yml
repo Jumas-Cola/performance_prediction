@@ -1,0 +1,10 @@
+version: "3"
+services:
+  streamlit:
+    build: .
+    restart: always
+    command: "streamlit run performance_prediction.py"
+    ports:
+      - "80:8501"
+    volumes:
+      - ".:/usr/src/app/src"
