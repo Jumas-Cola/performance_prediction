@@ -5,22 +5,24 @@ import pandas as pd
 
 import matplotlib.pyplot as plt
 
-import statsmodels.api as sm 
-from statsmodels.formula.api import glm
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
 
 from sklearn.metrics import classification_report
 from sklearn.metrics import roc_curve, auc
 from sklearn.model_selection import train_test_split
 
+from graphviz import Source
+
 from dataframe import df
 
 
-def logreg():
+def decision_tree():
     """
-    Создание, обучение и использование модели логистической регрессии.
+    Создание, обучение и использование модели дерева решений.
     """
 
-    st.title('Логистическая регрессиия')
+    st.title('Дерево решений')
 
     target_feature = st.sidebar.selectbox('Целевая переменная:', df.columns)
 
@@ -31,18 +33,28 @@ def logreg():
     X = df[selected_features]
     y = df[target_feature]
 
+    X = pd.get_dummies(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.33)
 
-    log_reg = glm(
-        f'have_no_problem ~ {" + ".join(selected_features) if len(selected_features) else "1"}',
-        data=pd.concat([X_train, y_train], axis=1),
-        family=sm.families.Binomial()).fit()
+    best_tree = DecisionTreeClassifier(
+        criterion='entropy',
+        max_depth=2,
+        min_samples_leaf=1,
+        min_samples_split=2
+    )
+    best_tree.fit(X_train, y_train)
 
-    st.subheader('Сводная таблица.')
+    graph = Source(tree.export_graphviz(
+        best_tree,
+        out_file=None,
+        feature_names=list(X),
+        class_names=['Problem', 'No problem'],
+        filled=True
+    ))
 
-    st.code(log_reg.summary())
+    st.image(graph.pipe(format='png'))
 
-    predictions = log_reg.predict(X_test)
+    predictions = best_tree.predict(X_test)
 
     st.subheader('Выявленные студенты в группе риска.')
 
@@ -51,7 +63,7 @@ def logreg():
     st.code(students_with_problems[students_with_problems.iloc[:,-1] < .5])
 
     st.subheader('Метрики качества модели.')
-    st.code(classification_report(y_test, round(predictions)))
+    st.code(classification_report(y_test, predictions.round(), zero_division=True))
 
     fpr, tpr, thresholds = roc_curve(y_test, predictions)
     roc_auc = auc(fpr, tpr)

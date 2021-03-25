@@ -3,6 +3,7 @@ import streamlit as st
 from intro import intro
 from data_processing import data_processing
 from logreg import logreg
+from decision_tree import decision_tree
 
 from dataframe import df 
 
@@ -15,7 +16,8 @@ def main():
     pages = {
         'Введение': intro,
         'Предварительный анализ': data_processing,
-        'Логистическая регрессия': logreg
+        'Логистическая регрессия': logreg,
+        'Дерево решений': decision_tree
     }
 
     st.sidebar.title('Страницы')
