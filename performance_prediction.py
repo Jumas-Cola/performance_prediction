@@ -1,9 +1,11 @@
 import streamlit as st
 
+from functools import partial
+
 from intro import intro
 from data_processing import data_processing
-from logreg import logreg
-from decision_tree import decision_tree
+from log_reg import LogReg
+from decision_tree import DecisionTree
 
 from dataframe import df 
 
@@ -16,8 +18,8 @@ def main():
     pages = {
         'Введение': intro,
         'Предварительный анализ': data_processing,
-        'Логистическая регрессия': logreg,
-        'Дерево решений': decision_tree
+        'Логистическая регрессия': partial(LogReg, df),
+        'Дерево решений': partial(DecisionTree, df)
     }
 
     st.sidebar.title('Страницы')
