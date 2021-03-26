@@ -22,6 +22,8 @@ class LogReg:
         self.features_selection()
         self.model_fit()
         self.show_summary()
+        self.show_students_with_problems()
+        self.show_metrics()
 
     def features_selection(self):
         """Выбор предикторов и целевой переменной."""
@@ -53,28 +55,30 @@ class LogReg:
         """Отображение студентов в группе риска."""
         st.subheader('Выявленные студенты в группе риска.')
 
-        predictions = log_reg.predict(X_test)
-        students_with_problems = X_test.copy()
-        students_with_problems['predictions'] = predictions
+        self.predictions = self.log_reg.predict(self.X_test)
+        students_with_problems = self.X_test.copy()
+        students_with_problems['predictions'] = self.predictions
         st.code(students_with_problems[students_with_problems.iloc[:,-1] < .5])
 
- #  st.subheader('Метрики качества модели.')
- #  st.code(classification_report(y_test, round(predictions)))
+    def show_metrics(self):
+        """Отображение метрик качества модели."""
+        st.subheader('Метрики качества модели.')
+        st.code(classification_report(
+            self.y_test, self.predictions.round(), zero_division=True))
 
- #  fpr, tpr, thresholds = roc_curve(y_test, predictions)
- #  roc_auc = auc(fpr, tpr)
+        fpr, tpr, thresholds = roc_curve(self.y_test, self.predictions)
+        roc_auc = auc(fpr, tpr)
 
- #  plt.figure()
- #  lw = 2
- #  plt.plot(fpr, tpr, color='darkorange',
- #           lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
- #  plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
- #  plt.xlim([0.0, 1.0])
- #  plt.ylim([0.0, 1.05])
- #  plt.xlabel('False Positive Rate')
- #  plt.ylabel('True Positive Rate')
- #  plt.title('ROC curve')
- #  plt.legend(loc="lower right")
- #  st.pyplot(plt)
-
+        plt.figure()
+        lw = 2
+        plt.plot(fpr, tpr, color='darkorange',
+                 lw=lw, label='ROC curve (area = %0.2f)' % roc_auc)
+        plt.plot([0, 1], [0, 1], color='navy', lw=lw, linestyle='--')
+        plt.xlim([0.0, 1.0])
+        plt.ylim([0.0, 1.05])
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC curve')
+        plt.legend(loc="lower right")
+        st.pyplot(plt)
 

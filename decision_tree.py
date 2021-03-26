@@ -21,7 +21,7 @@ class DecisionTree:
     def __init__(self, df):
         st.title('Дерево решений')
         self.df = df
-        self.choose_features()
+        self.features_selection()
         self.model_fit()
         self.show_feature_importances()
         self.show_students_with_problems()
