@@ -1,5 +1,6 @@
 import streamlit as st
 
+import base64
 import numpy as np
 import pandas as pd
 
@@ -30,7 +31,7 @@ class DecisionTree:
     def features_selection(self):
         """Выбор предикторов и целевой переменной."""
         target_feature = st.sidebar.selectbox(
-            'Целевая переменная:', self.df.columns)
+            'Целевая переменная:', self.df.columns, len(self.df.columns) - 1)
 
         st.sidebar.text('Предикторы:')
 
@@ -47,10 +48,10 @@ class DecisionTree:
 
     def model_fit(self):
         """Создание и обучение модели."""
-        max_depth = st.slider('Глубина дерева', 1, 6)
+        max_depth = st.sidebar.slider('Глубина дерева', 1, 10, 3)
 
         self.best_tree = DecisionTreeClassifier(
-            criterion='entropy',
+            criterion='gini',
             max_depth=max_depth,
             min_samples_leaf=1,
             min_samples_split=2
@@ -75,7 +76,7 @@ class DecisionTree:
             'features': list(self.X_train)
         })
 
-        st.subheader('Важность предикторов')
+        st.subheader('Важность предикторов.')
         st.write(feature_importances_df.sort_values(
             'feature_importances', ascending=False))
 
@@ -83,11 +84,18 @@ class DecisionTree:
         """Отображение студентов в группе риска."""
         st.subheader('Выявленные студенты в группе риска.')
 
-        self.predictions = self.best_tree.predict(self.X_test)
+        self.predictions = self.best_tree.predict_proba(self.X_test)[:, 1]
         students_with_problems = self.X_test.copy()
         students_with_problems['predictions'] = self.predictions
-        st.code(
-            students_with_problems[students_with_problems.iloc[:, -1] < .5])
+        threshold = st.slider('Пороговое значение:', .01, .99, .5)
+        students_with_problems = students_with_problems[students_with_problems.iloc[:,-1] < threshold]
+        st.write(f'Всего: {students_with_problems.shape[0]}')
+        st.write(students_with_problems)
+
+        csv = students_with_problems.to_csv(index=False)
+        b64 = base64.b64encode(csv.encode()).decode()
+        href = f'<a href="data:file/csv;base64,{b64}" download="students_with_problems.csv">Download CSV</a>'
+        st.markdown(href, unsafe_allow_html=True)
 
     def show_metrics(self):
         """Отображение метрик качества модели."""

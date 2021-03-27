@@ -6,6 +6,7 @@ from intro import intro
 from data_processing import data_processing
 from log_reg import LogReg
 from decision_tree import DecisionTree
+from random_forest import RandomForest
 
 from dataframe import df 
 
@@ -19,7 +20,8 @@ def main():
         'Введение': intro,
         'Предварительный анализ': data_processing,
         'Логистическая регрессия': partial(LogReg, df),
-        'Дерево решений': partial(DecisionTree, df)
+        'Дерево решений': partial(DecisionTree, df),
+        'Случайный лес': partial(RandomForest, df)
     }
 
     st.sidebar.title('Страницы')

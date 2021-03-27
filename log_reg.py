@@ -1,5 +1,6 @@
 import streamlit as st
 
+import base64
 import numpy as np
 import pandas as pd
 
@@ -27,21 +28,21 @@ class LogReg:
 
     def features_selection(self):
         """Выбор предикторов и целевой переменной."""
-        target_feature = st.sidebar.selectbox('Целевая переменная:', self.df.columns)
+        self.target_feature = st.sidebar.selectbox('Целевая переменная:', self.df.columns, len(self.df.columns) - 1)
 
         st.sidebar.text('Предикторы:')
-        features = np.array([f for f in self.df.columns if f != target_feature])
+        features = np.array([f for f in self.df.columns if f != self.target_feature])
         self.selected_features = features[[st.sidebar.checkbox(f, f) for f in features]]
 
         self.X = self.df[self.selected_features]
-        self.y = self.df[target_feature]
+        self.y = self.df[self.target_feature]
 
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=.33)
 
     def model_fit(self):
         """Создание и обучение модели."""
         self.log_reg = glm(
-            f'have_no_problem ~ {" + ".join(self.selected_features) if len(self.selected_features) else "1"}',
+            f'{self.target_feature} ~ {" + ".join(self.selected_features) if len(self.selected_features) else "1"}',
             data=pd.concat([self.X_train, self.y_train], axis=1),
             family=sm.families.Binomial()).fit()
 
@@ -50,7 +51,6 @@ class LogReg:
         st.subheader('Сводная таблица.')
         st.code(self.log_reg.summary())
 
-
     def show_students_with_problems(self):
         """Отображение студентов в группе риска."""
         st.subheader('Выявленные студенты в группе риска.')
@@ -58,7 +58,15 @@ class LogReg:
         self.predictions = self.log_reg.predict(self.X_test)
         students_with_problems = self.X_test.copy()
         students_with_problems['predictions'] = self.predictions
-        st.code(students_with_problems[students_with_problems.iloc[:,-1] < .5])
+        threshold = st.slider('Пороговое значение:', .01, .99, .5)
+        students_with_problems = students_with_problems[students_with_problems.iloc[:,-1] < threshold]
+        st.write(f'Всего: {students_with_problems.shape[0]}')
+        st.write(students_with_problems)
+
+        csv = students_with_problems.to_csv(index=False)
+        b64 = base64.b64encode(csv.encode()).decode()
+        href = f'<a href="data:file/csv;base64,{b64}" download="students_with_problems.csv">Download CSV</a>'
+        st.markdown(href, unsafe_allow_html=True)
 
     def show_metrics(self):
         """Отображение метрик качества модели."""
