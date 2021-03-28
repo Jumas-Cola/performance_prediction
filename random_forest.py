@@ -69,8 +69,8 @@ class RandomForest:
             'feature_importances', ascending=False))
 
     def show_students_with_problems(self):
-        """Отображение студентов в группе риска."""
-        st.subheader('Выявленные студенты в группе риска.')
+        """Отображение учеников в группе риска."""
+        st.subheader('Выявленные ученики в группе риска.')
 
         self.predictions = self.best_forest.predict_proba(self.X_test)[:, 1]
         students_with_problems = self.X_test.copy()

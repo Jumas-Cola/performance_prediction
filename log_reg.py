@@ -52,8 +52,8 @@ class LogReg:
         st.code(self.log_reg.summary())
 
     def show_students_with_problems(self):
-        """Отображение студентов в группе риска."""
-        st.subheader('Выявленные студенты в группе риска.')
+        """Отображение учеников в группе риска."""
+        st.subheader('Выявленные ученики в группе риска.')
 
         self.predictions = self.log_reg.predict(self.X_test)
         students_with_problems = self.X_test.copy()
